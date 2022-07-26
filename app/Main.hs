@@ -1,6 +1,6 @@
 module Main where
 
-import Lib
+import Lib ( waveField )
 
 main :: IO ()
-main = someFunc
+main = print (waveField 24 24)

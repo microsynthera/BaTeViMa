@@ -1,2 +1,4 @@
+import Lib ( waveField )
+
 main :: IO ()
-main = putStrLn "Test suite not yet implemented"
+main = print (waveField 24 24)
