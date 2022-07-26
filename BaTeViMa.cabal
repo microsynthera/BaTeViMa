@@ -12,7 +12,7 @@ bug-reports:    https://github.com/microsynthera/BaTeViMa/issues
 author:         June R.
 maintainer:     microsynthera@pm.me
 copyright:      2022 June R.
-license:        FAFOL
+license:        FAFOLv0.2
 license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
