@@ -1,7 +1,7 @@
 name:                BaTeViMa
 version:             0.1.0.0
 github:              "microsynthera/BaTeViMa"
-license:             FAFOLv0.2
+license:             "FAFOL"
 author:              "June R."
 maintainer:          "microsynthera@pm.me"
 copyright:           "2022 June R."
@@ -20,8 +20,7 @@ extra-source-files:
 description:         Please see the README on GitHub at <https://github.com/microsynthera/BaTeViMa#readme>
 
 dependencies:
-- base >= 4.7 && < 5
-- fltkhs
+- base
 
 library:
   source-dirs: src

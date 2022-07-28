@@ -1,4 +1,13 @@
-import Lib ( waveField )
+import Trits
+
+tritsTestEq :: Bool
+tritsTestEq =
+    Posi == Posi &&
+    Zero == Zero &&
+    Nega == Nega &&
+    Posi /= Nega &&
+    Posi /= Zero &&
+    Nega /= Zero
 
 main :: IO ()
-main = print (waveField 24 24)
+main = print "Test goes here."
