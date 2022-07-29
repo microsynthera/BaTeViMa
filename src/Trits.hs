@@ -22,6 +22,18 @@ instance Ord Trit where
     Posi <= Posi = True
     _ <= _ = False
 
+isNega :: Trit -> Bool
+isNega Nega = True
+isNega _ = False
+
+isZero :: Trit -> Bool
+isZero Zero = True
+isZero _ = False
+
+isPosi :: Trit -> Bool
+isPosi Posi = True
+isPosi _ = False
+
 invertTrit :: Trit -> Trit
 invertTrit Nega = Posi
 invertTrit Posi = Nega
@@ -65,3 +77,43 @@ norTrit a b = invertTrit (orTrit a b)
 xnorTrit :: Trit -> Trit -> Trit
 xnorTrit a b = invertTrit (xorTrit a b)
 
+{- the final pair's first element is the result trit, 
+ - the last element is the carry trit
+ -}
+addTrit :: Trit -> Trit -> (Trit, Trit)
+addTrit Zero Zero = (Zero, Zero)
+addTrit Zero x = (Zero, x)
+addTrit Posi x
+    | advanceTrit x == Nega = (Posi, Nega)
+    | otherwise = (Zero, advanceTrit x)
+addTrit Nega x
+    | reverseTrit x == Posi = (Nega, Posi)
+    | otherwise = (Zero, reverseTrit x)
+
+{- "Trits" definitions 
+ - These definitions codify the behavior of lists of Trits
+ - Lists of Trits are big endian (makes the recursion easier)
+ -}
+
+type Trits = [Trit]
+
+isZeros :: Trits -> Bool
+isZeros = foldr ((&&) . isZero) True
+
+invertTrits :: Trits -> Trits
+invertTrits = map invertTrit
+
+posiCarryTrits :: Trits -> Trits
+
+negaCarryTrits :: Trits -> Trits
+
+addTrits :: Trits -> Trits -> Trits
+addTrits [] [] = []
+addTrits [] (y:ys) = y : addTrits [] ys
+addTrits (x:xs) [] = x : addTrits xs []
+addTrits (x:xs) (y:ys)
+    | isZero x && isZeros xs = y : ys
+    | isZero y && isZeros ys = x : xs
+    | otherwise = 
+        let interResult = addTrit x y
+            in last interResult 
