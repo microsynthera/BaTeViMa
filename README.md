@@ -3,9 +3,21 @@ A Balanced Ternary Virtual Machine
 
 *Under construction... Come back later.*
 
+## TODO
+
+- [ ] trit-level multiplication
+- [ ] BTInt typeclass definitions
+- - [X] Show
+- - [ ] Read
+- - [X] Eq
+- - [X] Ord
+- - [ ] Enum
+- - [ ] Num
+- - [ ] Integral
+
 ## Features
 
-### Mathematics Layer 
+### Mathematics Layer
 - [X] three-valued logic
 - [ ] ternary-coded characters
 - [ ] balanced ternary arithmetic

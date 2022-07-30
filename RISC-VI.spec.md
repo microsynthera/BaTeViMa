@@ -3,7 +3,7 @@
 
 # The RISC VI ISA Specification
 
-Editor: June R. `microsynthera@pm.me`
+Editor(s): June R. `microsynthera@pm.me`
 
 Contributor(s): June R.
 
@@ -52,11 +52,11 @@ The name RISC-VI was chosen because there are six trits in a tryte.
 
 ### Programmer's Model
 
-The value of a trit will be represented by the characters: "+" for positive, "0" for zero, and "-" for negative. Balanced ternary numbers will be prefixed with "0t" for clarity. For example, `0t+-0` represents the balanced ternary number with a positive 9-trit, negative 3-trit, and zero 1-trit, i.e., 6~10~. 
+The value of a trit will be represented by the characters: "+" for positive, "0" for zero, and "-" for negative. Sequences of trits will be interpreted as big endian unless noted otherwise. Balanced ternary numbers will be prefixed with "0t" for clarity. For example, `0t0-+` represents the balanced ternary number with a positive 9-trit, negative 3-trit, and zero 1-trit, i.e., 6_10_. 
 
-For RVI24I, the 27 registers are each 24 trits wide, i.e., XLEN=24. Register `0t000` is hardwired with all trits equal to zero. General purpose registers `0t--0` to `0t00-` and `0t00+` to `0t+++` hold values that various instructions interpret as a collection of three-valued logic values, or as balanced ternary integers.
+For RVI24I, the 27 registers are each 24 trits wide, i.e., XLEN=24. Register `0t---` is hardwired with all trits equal to zero. General purpose registers `0t0--` to `0t0++` hold values that various instructions interpret as a collection of three-valued logic values, or as balanced ternary integers.
 
-There is one additional register: the program counter "pc" (register `0t---`) holds the address of the current instruction. The first instruction is addressed `0t------------------------`. Subsequent instructions increment the program counter by one. 
+There is one additional register: the program counter "pc" (register `0t+++`) holds the address of the current instruction. The first instruction is addressed `0t------------------------`. Subsequent instructions increment the program counter by one. 
 
 ### Base Instruction Formats
 
