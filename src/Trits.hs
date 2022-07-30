@@ -146,43 +146,37 @@ addTrits (x:xs) (y:ys)
     | carryTrit x y == Nega = addTrit x y : addTrits xs (negCarryTrits ys)
     | otherwise = addTrit x y : addTrits xs ys
 
+shiftTrits :: Int -> Trits -> Trits
+shiftTrits _ [] = []
+shiftTrits 0 xs = xs
+shiftTrits n xs 
+    | n > 0 = Zero : shiftTrits (n-1) xs
+    | n < 0 = shiftTrits (n+1) (tail xs)
+
+multTritsByTrit :: Trit -> Trits -> Trits
+multTritsByTrit Posi xs = xs
+multTritsByTrit Zero xs = []
+multTritsByTrit Nega xs = invertTrits xs
+
 multTrits :: Trits -> Trits -> Trits
 multTrits [] [] = []
 multTrits xs [] = []
 multTrits [] ys = []
--- TODO complete this definition
+multTrits xs ys = foldr addTrits [] inlineProducts
+    where inlineProducts = [shiftTrits order value | (order, value) <- zip [0..] lnProds]
+          lnProds = [multTritsByTrit x ys | x <- xs]
 
 trits2Int :: Trits -> Int
 trits2Int [] = 0
 trits2Int xs = sum [d | d <- [trit2Int n x | (n, x) <- zip [0..] xs]]
 
-newtype BTInt = BTInt [Trit]
+-- can technically convert any positive integer, just inefficient
+oneDigit2Trits :: Int -> Trits
+oneDigit2Trits 0 = []
+oneDigit2Trits n
+    | n > 0 = addTrits [Posi] (oneDigit2Trits (n-1))
+    | otherwise = error "undefined"
 
-instance Show BTInt where
-    show (BTInt []) = ""
-    show (BTInt (x:xs)) = show x ++ show (BTInt xs)
-
-instance Eq BTInt where
-    BTInt [] == BTInt [] = True
-    BTInt (_:_) == BTInt [] = False
-    BTInt [] == BTInt (_:_) = False
-    BTInt (x:xs) == BTInt (y:ys)
-        | isZeros xs && isZeros ys = x == y
-        | otherwise = x == y && BTInt xs == BTInt ys
-
-instance Ord BTInt where
-    BTInt [] <= BTInt [] = True
-    BTInt [x] <= BTInt [] = x <= Zero
-    BTInt [] <= BTInt [x] = Zero <= x
-    BTInt [x] <= BTInt [y] = x <= y
-    BTInt (x:xs) <= BTInt [] = BTInt xs <= BTInt []
-    BTInt [] <= BTInt (y:ys) = BTInt [] <= BTInt ys
-    BTInt (x:xs) <= BTInt (y:ys)
-        | isZeros xs && isZeros ys = x <= y
-        | otherwise = BTInt xs <= BTInt ys
-
-instance Enum BTInt where
-    fromEnum (BTInt []) = 0
-    fromEnum (BTInt xs) = trits2Int xs
-    toEnum 0 = BTInt []
-    toEnum x =
+int2Trits :: Int -> Trits
+int2Trits 0 = []
+-- complete this definition
