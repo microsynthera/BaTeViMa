@@ -1,11 +1,6 @@
 module Trits where
 
-data Trit = Nega | Zero | Posi
-
-instance Show Trit where
-    show Nega = "-"
-    show Zero = "0"
-    show Posi = "+"
+data Trit = Nega | Zero | Posi deriving Show
 
 instance Eq Trit where
     Nega == Nega = True
@@ -33,6 +28,11 @@ isZero _ = False
 isPosi :: Trit -> Bool
 isPosi Posi = True
 isPosi _ = False
+
+signumTrit :: Trit -> Int
+signumTrit Nega = -1
+signumTrit Zero = 0
+signumTrit Posi = 1
 
 invertTrit :: Trit -> Trit
 invertTrit Nega = Posi
@@ -99,7 +99,7 @@ addAndCarryTrit a b = (addTrit a b, carryTrit a b)
 multTrit :: Trit -> Trit -> Trit
 multTrit = xnorTrit
 
-trit2Int :: Int -> Trit -> Int
+trit2Int :: Integer -> Trit -> Integer
 trit2Int x Nega = -1 * 3^x
 trit2Int x Zero = 0 * 3^x
 trit2Int x Posi = 1 * 3^x
@@ -146,12 +146,13 @@ addTrits (x:xs) (y:ys)
     | carryTrit x y == Nega = addTrit x y : addTrits xs (negCarryTrits ys)
     | otherwise = addTrit x y : addTrits xs ys
 
-shiftTrits :: Int -> Trits -> Trits
+shiftTrits :: Integer -> Trits -> Trits
 shiftTrits _ [] = []
 shiftTrits 0 xs = xs
-shiftTrits n xs 
+shiftTrits n xs
     | n > 0 = Zero : shiftTrits (n-1) xs
     | n < 0 = shiftTrits (n+1) (tail xs)
+    | otherwise = error "added so hls won't complain"
 
 multTritsByTrit :: Trit -> Trits -> Trits
 multTritsByTrit Posi xs = xs
@@ -159,24 +160,49 @@ multTritsByTrit Zero xs = []
 multTritsByTrit Nega xs = invertTrits xs
 
 multTrits :: Trits -> Trits -> Trits
-multTrits [] [] = []
-multTrits xs [] = []
-multTrits [] ys = []
-multTrits xs ys = foldr addTrits [] inlineProducts
+multTrits [] [] = [Zero]
+multTrits xs [] = [Zero]
+multTrits [] ys = [Zero]
+multTrits xs ys = foldr addTrits [Zero] inlineProducts
     where inlineProducts = [shiftTrits order value | (order, value) <- zip [0..] lnProds]
           lnProds = [multTritsByTrit x ys | x <- xs]
 
-trits2Int :: Trits -> Int
+exptTrits :: Trits -> Integer -> Trits
+exptTrits _ 0 = [Posi]
+exptTrits x n = multTrits x (exptTrits x (n-1))
+
+trits2Int :: Trits -> Integer
 trits2Int [] = 0
 trits2Int xs = sum [d | d <- [trit2Int n x | (n, x) <- zip [0..] xs]]
 
 -- can technically convert any positive integer, just inefficient
-oneDigit2Trits :: Int -> Trits
+oneDigit2Trits :: Integer -> Trits
 oneDigit2Trits 0 = []
 oneDigit2Trits n
     | n > 0 = addTrits [Posi] (oneDigit2Trits (n-1))
-    | otherwise = error "undefined"
+    | otherwise = error "added so hls doesnt complain"
 
-int2Trits :: Int -> Trits
+tenInTrits :: Trits
+tenInTrits = [Posi,Zero,Posi]
+
+digits2Trits :: Integer -> [Trits]
+digits2Trits 0 = []
+digits2Trits x = oneDigit2Trits (x `mod` 10) : digits2Trits (x `div` 10)
+
+unsignedInt2Trits :: Integer -> Trits
+unsignedInt2Trits 0 = []
+unsignedInt2Trits x
+    | x > 0 =
+        foldr addTrits [] [multTrits order digit | (order, digit) <- zip [exptTrits tenInTrits n | n <- [0..]] (digits2Trits x)]
+    | x < 0 = error "negative integer will cause infinite loop"
+    | otherwise = error "added so hls won't complain"
+
+int2Trits :: Integer -> Trits
 int2Trits 0 = []
--- complete this definition
+int2Trits x
+    | x < 0 = multTrits [Nega] (unsignedInt2Trits (-x))
+    | x > 0 = unsignedInt2Trits x
+    | otherwise = error "added so hls won't complain"
+
+signumTrits :: Trits -> Trit
+signumTrits x = last (chompTrits x)

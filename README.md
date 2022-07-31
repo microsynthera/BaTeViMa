@@ -7,12 +7,10 @@ A Balanced Ternary Virtual Machine
 
 - [ ] trit-level multiplication
 - [ ] BTInt typeclass definitions
-- - [X] Show
-- - [ ] Read
 - - [X] Eq
 - - [X] Ord
-- - [ ] Enum
-- - [ ] Num
+- - [X] Enum
+- - [X] Num
 - - [ ] Integral
 
 ## Features
