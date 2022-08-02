@@ -1,5 +1,10 @@
 module BTInt where
 
+{- this Module defines a balanced ternary Integer type (BTInt)
+ - the type is unbounded and of indeterminate size 
+ - useful for balanced ternary math at a high-level, 
+ - but not useful for trit-wise operations -}
+
 import Trits
 
 newtype BTInt = BTInt [Trit] deriving Show
@@ -47,9 +52,6 @@ instance Num BTInt where
     abs (BTInt x) 
         | null x = BTInt [Zero]
         | signumTrits x == Nega = BTInt (invertTrits x)
-        | signumTrits x == Zero = BTInt [Zero]
         | signumTrits x == Posi = BTInt x
-        | otherwise = error "failed to apply abs on BTInt"
+        | otherwise = BTInt [Zero]
 
-instance Integral BTInt where
-    -- complete this instance

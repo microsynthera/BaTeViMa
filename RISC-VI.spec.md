@@ -7,7 +7,7 @@ Editor(s): June R. `microsynthera@pm.me`
 
 Contributor(s): June R.
 
-This document is released under the Creative Commons Attribution 4.0 International License. 
+This document is released under the Creative Commons Attribution 4.0 International License.
 
 This document is a derivative of "The RISC-V Instruction Set Manual, Volume I: User-Level ISA, Document Version 20191213”, Editors Andrew Waterman and Krste Asanovi ́c, RISC-V Foundation, December 2019."
 
@@ -18,7 +18,7 @@ RISC-VI (pronounced "risk-six") is an experimental instruction set architecture 
 - A completely open ISA that is freely available to academia and industry.
 - Fun.
 
-The name RISC-VI was chosen because there are six trits in a tryte. 
+The name RISC-VI was chosen because there are six trits in a tryte.
 
 ### RISC-VI Hardware Platform Terminology
 
@@ -48,15 +48,15 @@ The name RISC-VI was chosen because there are six trits in a tryte.
 
 ...
 
-## RVI24I Base Integer Instruction Set
+## RVI18I Base Integer Instruction Set
 
 ### Programmer's Model
 
-The value of a trit will be represented by the characters: "+" for positive, "0" for zero, and "-" for negative. Sequences of trits will be interpreted as big endian unless noted otherwise. Balanced ternary numbers will be prefixed with "0t" for clarity. For example, `0t0-+` represents the balanced ternary number with a positive 9-trit, negative 3-trit, and zero 1-trit, i.e., 6_10_. 
+The value of a trit will be represented by the characters: "+" for positive, "0" for zero, and "-" for negative. Sequences of trits will be interpreted as big endian unless noted otherwise. Balanced ternary numbers will be prefixed with "0t" for clarity. For example, `0t0-+` represents the balanced ternary number with a positive 9-trit, negative 3-trit, and zero 1-trit, i.e., 6_10_.
 
-For RVI24I, the 27 registers are each 24 trits wide, i.e., XLEN=24. Register `0t---` is hardwired with all trits equal to zero. General purpose registers `0t0--` to `0t0++` hold values that various instructions interpret as a collection of three-valued logic values, or as balanced ternary integers.
+For RVI24I, the 27 registers are each 18 trits wide, i.e., XLEN=18. Register `0t---` is hardwired with all trits equal to zero. General purpose registers `0t0--` to `0t0++` hold values that various instructions interpret as a collection of three-valued logic values, or as balanced ternary integers.
 
-There is one additional register: the program counter "pc" (register `0t+++`) holds the address of the current instruction. The first instruction is addressed `0t------------------------`. Subsequent instructions increment the program counter by one. 
+There is one additional register: the program counter "pc" (register `0t+++`) holds the address of the current instruction. The first instruction is addressed `0t------------------------`. Subsequent instructions increment the program counter by one.
 
 ### Base Instruction Formats
 
