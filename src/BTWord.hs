@@ -20,8 +20,10 @@ import Trits
       trits2Int,
       trits2Str,
       xorTrits,
-      Trit,
+      Trit (..),
       Trits )
+
+import Control.Exception ( throw, ArithException(Overflow) )
 
 class Eq a => Trits a where
     (.&.)           :: a -> a -> a
@@ -78,3 +80,10 @@ instance BTWord.Trits BTWord18 where
     tritSize (BTWord18 xs)                  = 18
     testTrit (BTWord18 xs) n                = last $ take (n+1) xs
     setTrit (BTWord18 xs) a n               = BTWord18 $ take n xs ++ [a] ++ drop (n+1) xs
+
+--smart constructor for BTWord18 type
+mkBTWord18 :: [Trits.Trit] -> BTWord18
+mkBTWord18 xs
+    | length xs == 18 = BTWord18 xs
+    | length xs < 18 = BTWord18 $ xs ++ replicate (18 - length xs) Zero
+    | otherwise = throw Overflow
