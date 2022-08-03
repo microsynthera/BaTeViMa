@@ -167,12 +167,33 @@ addTrits (x:xs) (y:ys)
     | carryTrit x y == Nega  = addTrit x y : addTrits xs (negCarryTrits ys)
     | otherwise              = addTrit x y : addTrits xs ys
 
-shiftTrits :: Integer -> Trits -> Trits
-shiftTrits _ [] = []
-shiftTrits n xs
-    | n > 0     = Zero : shiftTrits (n-1) xs
-    | n == 0    = xs
-    | otherwise = throw NonTermination
+unsafeShiftRTrits :: Integer -> Trits -> Trits
+unsafeShiftRTrits _ []  = []
+unsafeShiftRTrits n xs
+    | n > 0             = Zero : unsafeShiftRTrits (n-1) xs
+    | n == 0            = xs
+    | otherwise         = throw NonTermination
+
+unsafeShiftLTrits :: Integer -> Trits -> Trits
+unsafeShiftLTrits _ []  = []
+unsafeShiftLTrits n xs
+    | n > 0             = unsafeShiftLTrits (n-1) $ tail xs ++ [Zero]
+    | n == 0            = xs
+    | otherwise         = throw NonTermination
+
+-- unsafe right shift changes length of Trits, safe version amends this by truncation
+shiftRTrits :: Trits -> Int -> Trits
+shiftRTrits xs n        = take origLenXS $ unsafeShiftRTrits (fromIntegral (abs n)) xs
+                            where origLenXS = length xs
+
+shiftLTrits :: Trits -> Int -> Trits
+shiftLTrits xs n        = unsafeShiftLTrits (fromIntegral (abs n)) xs
+
+shiftTrits :: Trits -> Int -> Trits
+shiftTrits xs n
+    | n < 0             = shiftLTrits xs n
+    | n > 0             = shiftRTrits xs n
+    | otherwise         = xs
 
 multTritsByTrit :: Trit -> Trits -> Trits
 multTritsByTrit Posi xs = xs
@@ -184,7 +205,7 @@ multTrits [] [] = [Zero]
 multTrits xs [] = [Zero]
 multTrits [] ys = [Zero]
 multTrits xs ys = foldr addTrits [Zero] inlineProducts
-    where inlineProducts = [shiftTrits order value | (order, value) <- zip [0..] lnProds]
+    where inlineProducts = [unsafeShiftRTrits order value | (order, value) <- zip [0..] lnProds]
           lnProds        = [multTritsByTrit x ys | x <- xs]
 
 exptTrits :: Trits -> Integer -> Trits
@@ -225,13 +246,30 @@ int2Trits x
     | otherwise = []
 
 signumTrits :: Trits -> Trit
-signumTrits x = last (chompTrits x)
+signumTrits []  = Zero
+signumTrits x   = last (chompTrits x)
+
+absTrits :: Trits -> Trits
+absTrits x = multTrits [signumTrits x] x
 
 fixLenTrits :: Int -> Trits -> Trits
+fixLenTrits 0 []     = []
 fixLenTrits 0 xs     = throw Overflow
 fixLenTrits 1 [x]    = [x]
 fixLenTrits n []     = Zero : fixLenTrits (n-1) []
 fixLenTrits n (x:xs) = x : fixLenTrits (n-1) xs
+
+maxTrits :: Int -> Trits
+maxTrits n
+    | n == 0    = []
+    | n > 0     = Posi : maxTrits (n-1)
+    | otherwise = throw NonTermination
+
+minTrits :: Int -> Trits
+minTrits n
+    | n == 0    = []
+    | n > 0     = Nega : minTrits (n-1)
+    | otherwise = throw NonTermination
 
 trits2Str :: Trits -> String
 trits2Str = foldr ((:) . trit2Chr) ""
@@ -253,8 +291,64 @@ eqTrits, neqTrits :: Trits -> Trits -> Bool
     | x == Zero && isZeros xs = True
     | otherwise               = False
 (x:xs) `eqTrits` (y:ys)       = x == y && xs `eqTrits` ys
+xs `neqTrits` ys              = not $ xs `eqTrits` ys
 
-neqTrits                      = not . eqTrits
+leTrits, ltTrits, geTrits, gtTrits :: Trits -> Trits -> Bool
+[] `ltTrits` []                 = False
+[x] `ltTrits` [y]               = x < y
+[] `ltTrits` [y]
+    | y == Posi                 = True
+    | otherwise                 = False
+[x] `ltTrits` []
+    | x == Nega                 = True
+    | otherwise                 = False
+[] `ltTrits` ys
+    | signumTrits ys == Posi    = True
+    | otherwise                 = False
+xs `ltTrits` []
+    | signumTrits xs == Nega    = True
+    | otherwise                 = False
+xs `ltTrits` ys
+    | length (chompTrits xs)
+    == length (chompTrits ys)   = (last xs < last ys)
+                                    || ((last xs == last ys)
+                                        && (init xs `ltTrits` init ys))
+    | length (chompTrits xs)
+    < length (chompTrits ys)    = (signumTrits xs < signumTrits ys)
+                                    || ((signumTrits xs == signumTrits ys)
+                                        && (signumTrits xs == Posi))
+    | otherwise                 = (signumTrits xs > signumTrits ys)
+                                    || ((signumTrits xs == signumTrits ys)
+                                        && (signumTrits xs == Nega))
+xs `gtTrits` ys                 = not $ xs `ltTrits` ys
+xs `leTrits` ys                 = xs `eqTrits` ys || xs `ltTrits` ys
+xs `geTrits` ys                 = xs `eqTrits` ys || xs `gtTrits` ys
 
-ltTrits, leTrits, gtTrits, geTrits :: Trits -> Trits -> Bool
-[] `ltTrits` []               = False
+compareTrits :: Trits -> Trits -> Ordering
+xs `compareTrits` ys
+    | xs `ltTrits` ys           = LT
+    | xs `eqTrits` ys           = EQ
+    | otherwise                 = GT
+
+andTrits, orTrits, xorTrits :: Trits -> Trits -> Trits
+xs `andTrits` ys                = [x `andTrit` y | (x, y) <- zip xs ys]
+xs `orTrits` ys                 = [x `orTrit` y | (x, y) <- zip xs ys]
+xs `xorTrits` ys                = [x `xorTrit` y | (x, y) <- zip xs ys]
+
+rotateRTrits :: Trits -> Int -> Trits
+rotateRTrits xs n
+    | n > 0                     = rotateRTrits (last xs : init xs) (n-1)
+    | n == 0                    = xs
+    | otherwise                 = throw NonTermination
+
+rotateLTrits :: Trits -> Int -> Trits
+rotateLTrits xs n
+    | n > 0                     = rotateLTrits (tail xs ++ [head xs]) (n-1)
+    | n == 0                    = xs
+    | otherwise                 = throw NonTermination
+
+rotateTrits :: Trits -> Int -> Trits
+rotateTrits xs n
+    | n > 0                     = rotateLTrits xs n
+    | n < 0                     = rotateRTrits xs n
+    | otherwise                 = xs

@@ -7,13 +7,7 @@ A Balanced Ternary Virtual Machine
 
 - [X] trit-level multiplication
 - [ ] trit-level quotRem
-- [X] BTInt typeclass definitions
-- - [X] Eq
-- - [X] Ord
-- - [X] Enum
-- - [X] Num
-- - [ ] Integral
-- [ ] word-length tris data type
+- [X] word-length trits data type
 
 
 ## Features
