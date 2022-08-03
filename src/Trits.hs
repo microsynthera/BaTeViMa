@@ -254,7 +254,9 @@ absTrits x = multTrits [signumTrits x] x
 
 fixLenTrits :: Int -> Trits -> Trits
 fixLenTrits 0 []     = []
-fixLenTrits 0 xs     = throw Overflow
+fixLenTrits 0 xs
+    | isZeros xs     = []
+    | otherwise      = throw Overflow
 fixLenTrits 1 [x]    = [x]
 fixLenTrits n []     = Zero : fixLenTrits (n-1) []
 fixLenTrits n (x:xs) = x : fixLenTrits (n-1) xs

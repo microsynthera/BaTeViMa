@@ -1,6 +1,27 @@
 module BTWord where
 
 import Trits
+    ( absTrits,
+      addTrits,
+      andTrits,
+      compareTrits,
+      eqTrits,
+      fixLenTrits,
+      int2Trits,
+      invertTrits,
+      maxTrits,
+      minTrits,
+      multTrits,
+      neqTrits,
+      orTrits,
+      rotateTrits,
+      shiftTrits,
+      signumTrits,
+      trits2Int,
+      trits2Str,
+      xorTrits,
+      Trit,
+      Trits )
 
 class Eq a => Trits a where
     (.&.)           :: a -> a -> a
@@ -19,10 +40,10 @@ class Eq a => Trits a where
     xnor            :: a -> a -> a
     xs `xnor` ys    = complement $ xs `xor` ys
 
-newtype BTWord18 = BTWord18 Trits.Trits deriving Show
+newtype BTWord18 = BTWord18 Trits.Trits --deriving Show
 
---instance Show BTWord18 where
---    show (BTWord18 xs)                      = "0t" ++ trits2Str xs
+instance Show BTWord18 where
+    show (BTWord18 xs)                      = "0t" ++ trits2Str xs
 
 instance Eq BTWord18 where
     (BTWord18 xs) == (BTWord18 ys)          = xs `eqTrits` ys
@@ -57,10 +78,3 @@ instance BTWord.Trits BTWord18 where
     tritSize (BTWord18 xs)                  = 18
     testTrit (BTWord18 xs) n                = last $ take (n+1) xs
     setTrit (BTWord18 xs) a n               = BTWord18 $ take n xs ++ [a] ++ drop (n+1) xs
-
--- exported definitions
-readTrit :: Char -> Trit
-readTrit '+'        = Posi
-readTrit '0'        = Zero
-readTrit '-'        = Nega
-readTrit _          = undefined
