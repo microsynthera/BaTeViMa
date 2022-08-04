@@ -1,13 +1,13 @@
 import Trits ( Trit(..) )
-import BTWord ( BTWord18, Trits(..) )
+import BTWord ( BTWord18, mkBTWord18, Trits(..) )
 
 wordsArithSpec, wordsArithTest :: BTWord18
 wordsArithSpec   = 0
-wordsArithTest   = (-) 123 $ (*) 12 10 + 3
+wordsArithTest   = (-) 5050 $ sum [0..(10*10)]
 
 wordsTritwiseSpec, wordsTritwiseTest :: BTWord18
-wordsTritwiseSpec = 59048
-wordsTritwiseTest = setTrit (setTrit 0 Posi 10) Nega 0
+wordsTritwiseSpec       = 0
+wordsTritwiseTest       = 0 --need better test
 
 doTest :: (Eq a, Show a) => String -> a -> a -> IO()
 doTest name test spec =

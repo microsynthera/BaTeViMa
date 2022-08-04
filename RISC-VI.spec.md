@@ -20,34 +20,6 @@ RISC-VI (pronounced "risk-six") is an experimental instruction set architecture 
 
 The name RISC-VI was chosen because there are six trits in a tryte.
 
-### RISC-VI Hardware Platform Terminology
-
-...
-
-### RISC-VI Software Execution Environments and Harts
-
-...
-
-### RISC-VI ISA Overview
-
-...
-
-### Memory
-
-...
-
-### Base Instruction-Length Encoding
-
-...
-
-### Exceptions, Traps, and Interrupts
-
-...
-
-### Unspecified Behaviors and Values
-
-...
-
 ## RVI18I Base Integer Instruction Set
 
 ### Programmer's Model
@@ -56,11 +28,24 @@ The value of a trit will be represented by the characters: "+" for positive, "0"
 
 For RVI24I, the 27 registers are each 18 trits wide, i.e., XLEN=18. Register `0t---` is hardwired with all trits equal to zero. General purpose registers `0t0--` to `0t0++` hold values that various instructions interpret as a collection of three-valued logic values, or as balanced ternary integers.
 
-There is one additional register: the program counter "pc" (register `0t+++`) holds the address of the current instruction. The first instruction is addressed `0t------------------------`. Subsequent instructions increment the program counter by one.
+There is one additional register: the program counter "pc" (register `0t+++`) holds the address of the current instruction. The first instruction is addressed `0t------------------`. Subsequent instructions increment the program counter by one.
 
 ### Base Instruction Formats
 
-...
+Each instruction is stored across an 18-trit word.
+
+legend:
+`[another_label(number_of_trits): range_higher~range_lower]+[label(number_of_trits): range_higher~range_lower]`
+- **label** is the name of the section of the instruction format
+- **number_of_trits** is the number of trits in this section
+- **range_lower** is the lower bound of the section, inclusive
+- **range_higher** is the higher bound of the section, inclusive
+
+#### R-type instruction (register-register instructions)
+`[funct7(3): 17~15]+[rs2(3): 14~12]+[rs1(3): 11~9]+[funct3(3): 8~6]+[rd(3): 5~3]+[opcode(3): 2~0]`
+
+#### I-type instruction (register-immediate instructions)
+`[imm(6): 17~12]+[rs1(3): 11~9]+[funct3(3): 8~6]+[rd(3): 5~3]+[opcode(3): 2~0]`
 
 ### Immediate Encoding Variants
 
@@ -68,7 +53,7 @@ There is one additional register: the program counter "pc" (register `0t+++`) ho
 
 ### Integer Computational Instructions
 
-...
+Most integer computational instructions operate on XLEN trits of values held in the integer register file. Integer computational instructions are either encoded as register-immediate operations using the I-type format or as register-register operations using the R-type format. The destination is register *rd* for both register-immediate and regitster-register instructions. No integer computational instructions cause arithmetic exceptions.
 
 ### Control Transfer Instructions
 

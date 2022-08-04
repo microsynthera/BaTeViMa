@@ -20,8 +20,7 @@ import Trits
       trits2Int,
       trits2Str,
       xorTrits,
-      Trit (..),
-      Trits )
+      Trit (..))
 
 import Control.Exception ( throw, ArithException(Overflow) )
 
@@ -42,7 +41,7 @@ class Eq a => Trits a where
     xnor            :: a -> a -> a
     xs `xnor` ys    = complement $ xs `xor` ys
 
-newtype BTWord18 = BTWord18 Trits.Trits --deriving Show
+newtype BTWord18 = BTWord18 [Trit] --deriving Show
 
 instance Show BTWord18 where
     show (BTWord18 xs)                      = "0t" ++ trits2Str xs
@@ -70,7 +69,7 @@ instance Bounded BTWord18 where
     minBound                                = BTWord18 $ minTrits 18
     maxBound                                = BTWord18 $ maxTrits 18
 
-instance BTWord.Trits BTWord18 where
+instance Trits BTWord18 where
     (BTWord18 xs) .&. (BTWord18 ys)         = BTWord18 $ xs `andTrits` ys
     (BTWord18 xs) .|. (BTWord18 ys)         = BTWord18 $ xs `orTrits` ys
     (BTWord18 xs) `xor` (BTWord18 ys)       = BTWord18 $ xs `xorTrits` ys
@@ -82,7 +81,7 @@ instance BTWord.Trits BTWord18 where
     setTrit (BTWord18 xs) a n               = BTWord18 $ take n xs ++ [a] ++ drop (n+1) xs
 
 --smart constructor for BTWord18 type
-mkBTWord18 :: [Trits.Trit] -> BTWord18
+mkBTWord18 :: [Trit] -> BTWord18
 mkBTWord18 xs
     | length xs == 18 = BTWord18 xs
     | length xs < 18 = BTWord18 $ xs ++ replicate (18 - length xs) Zero
