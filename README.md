@@ -5,6 +5,8 @@ A Balanced Ternary Virtual Machine
 
 ## TODO
 
+- [ ] ability to define multiple fixed length bt integer types (neatly)
+- [ ] data type containing registers, memory, i/o, etc. (adjustable also?)
 - [X] trit-level multiplication
 - [ ] trit-level quotRem/divMod
 - [ ] trit-level slicing
@@ -17,6 +19,7 @@ A Balanced Ternary Virtual Machine
 - - [ ] Ix instance
 - [X] three-valued logic
 - [ ] ternary-coded characters (unicode)
+- - [ ] reqs: { #2b57, #2af3, #2add, #2600~26ff (256), #1f411 }
 - [ ] TCB/BCT
 - [ ] modified RISC-V ISA spec, "RISC-VI"
 - - [ ] Base 24-trit Integer Instruction Set (modified RV32I, "RVI24I")

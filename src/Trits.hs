@@ -4,6 +4,9 @@ module Trits where
  - Trits are big endian lists -}
 
 import Control.Exception
+    ( throw,
+      NonTermination(NonTermination),
+      ArithException(Overflow, DivideByZero) )
 
 data Trit = Nega | Zero | Posi deriving Show
 
@@ -22,23 +25,12 @@ instance Ord Trit where
     Posi <= Posi = True
     _ <= _ = False
 
-isNega :: Trit -> Bool
-isNega Nega = True
-isNega _    = False
-
-isZero :: Trit -> Bool
-isZero Zero = True
-isZero _    = False
-
-isPosi :: Trit -> Bool
-isPosi Posi = True
-isPosi _    = False
-
 signumTrit :: Trit -> Int
 signumTrit Nega = -1
 signumTrit Zero = 0
 signumTrit Posi = 1
 
+-- multiplication by negative trit
 invertTrit :: Trit -> Trit
 invertTrit Nega = Posi
 invertTrit Posi = Nega
@@ -56,18 +48,36 @@ reverseTrit Posi = Zero
 reverseTrit Zero = Nega
 reverseTrit Nega = Posi
 
+{-
+  - 0 +
+- - - -
+0 - 0 0
++ - 0 +
+-}
 andTrit :: Trit -> Trit -> Trit
 andTrit Posi Posi = Posi
 andTrit a b
     | a == Nega || b == Nega = Nega
     | otherwise = Zero
 
+{-
+  - 0 +
+- - 0 +
+0 0 0 +
++ + + +
+-}
 orTrit :: Trit -> Trit -> Trit
 orTrit Nega Nega = Nega
 orTrit a b
     | a == Posi || b == Posi = Posi
     | otherwise = Zero
 
+{-
+  - 0 +
+- - 0 +
+0 0 0 0
++ + 0 -
+-}
 xorTrit :: Trit -> Trit -> Trit
 xorTrit Posi Posi = Nega
 xorTrit Nega Nega = Nega
@@ -84,6 +94,12 @@ norTrit a b = invertTrit (orTrit a b)
 xnorTrit :: Trit -> Trit -> Trit
 xnorTrit a b = invertTrit (xorTrit a b)
 
+{-
+  - 0 +
+- + - 0
+0 - 0 +
++ 0 + -
+-}
 addTrit :: Trit -> Trit -> Trit
 addTrit Zero b = b
 addTrit a Zero = a
@@ -92,6 +108,12 @@ addTrit a b
     | a == b            = invertTrit a
     | otherwise         = error "addTrit failed!"
 
+{-
+  - 0 +
+- - 0 0
+0 0 0 0
++ 0 0 +
+-}
 carryTrit :: Trit -> Trit -> Trit
 carryTrit a b
     | a == b    = a
@@ -106,6 +128,12 @@ addAndCarryTrit a b = (addTrit a b, carryTrit a b)
 multTrit :: Trit -> Trit -> Trit
 multTrit = xnorTrit
 
+{-
+  - +
+- + -
+0 0 0
++ - +
+-}
 divTrit :: Trit -> Trit -> Trit
 divTrit _ Zero = throw DivideByZero
 divTrit x y
@@ -129,52 +157,50 @@ trit2Chr Posi = '+'
  - Lists of Trits are big endian (makes the recursion easier)
  -}
 
-type Trits = [Trit]
-
-isZeros :: Trits -> Bool
-isZeros = foldr ((&&) . isZero) True
+isZeros :: [Trit] -> Bool
+isZeros = foldr ((&&) . (== Zero)) True
 
 -- Remove trailing Zeros from Trits
-chompTrits :: Trits -> Trits
+chompTrits :: [Trit] -> [Trit]
 chompTrits []    = []
 chompTrits (x:xs)
     | isZeros xs = [x]
     | otherwise  = x : chompTrits xs
 
-invertTrits :: Trits -> Trits
+invertTrits :: [Trit] -> [Trit]
 invertTrits = map invertTrit
 
-posCarryTrits :: Trits -> Trits
+posCarryTrits :: [Trit] -> [Trit]
 posCarryTrits [] = [Posi]
 posCarryTrits (x:xs)
     | x == Posi  = Nega : posCarryTrits xs
     | otherwise  = advanceTrit x : xs
 
-negCarryTrits :: Trits -> Trits
+negCarryTrits :: [Trit] -> [Trit]
 negCarryTrits [] = [Nega]
 negCarryTrits (x:xs)
     | x == Nega  = Posi : negCarryTrits xs
     | otherwise  = reverseTrit x : xs
 
-addTrits :: Trits -> Trits -> Trits
+addTrits :: [Trit] -> [Trit] -> [Trit]
 addTrits [] [] = []
 addTrits [] (y:ys) = y : ys
 addTrits (x:xs) [] = x : xs
 addTrits (x:xs) (y:ys)
-    | isZero x && isZeros xs = y : ys
-    | isZero y && isZeros ys = x : xs
+    | (== Zero) x && isZeros xs = y : ys
+    | (== Zero) y && isZeros ys = x : xs
     | carryTrit x y == Posi  = addTrit x y : addTrits xs (posCarryTrits ys)
     | carryTrit x y == Nega  = addTrit x y : addTrits xs (negCarryTrits ys)
     | otherwise              = addTrit x y : addTrits xs ys
 
-unsafeShiftRTrits :: Integer -> Trits -> Trits
+unsafeShiftRTrits :: Integer -> [Trit] -> [Trit]
 unsafeShiftRTrits _ []  = []
 unsafeShiftRTrits n xs
     | n > 0             = Zero : unsafeShiftRTrits (n-1) xs
     | n == 0            = xs
     | otherwise         = throw NonTermination
 
-unsafeShiftLTrits :: Integer -> Trits -> Trits
+unsafeShiftLTrits :: Integer -> [Trit] -> [Trit]
 unsafeShiftLTrits _ []  = []
 unsafeShiftLTrits n xs
     | n > 0             = unsafeShiftLTrits (n-1) $ tail xs ++ [Zero]
@@ -182,25 +208,25 @@ unsafeShiftLTrits n xs
     | otherwise         = throw NonTermination
 
 -- unsafe right shift changes length of Trits, safe version amends this by truncation
-shiftRTrits :: Trits -> Int -> Trits
+shiftRTrits :: [Trit] -> Int -> [Trit]
 shiftRTrits xs n        = take origLenXS $ unsafeShiftRTrits (fromIntegral (abs n)) xs
                             where origLenXS = length xs
 
-shiftLTrits :: Trits -> Int -> Trits
+shiftLTrits :: [Trit] -> Int -> [Trit]
 shiftLTrits xs n        = unsafeShiftLTrits (fromIntegral (abs n)) xs
 
-shiftTrits :: Trits -> Int -> Trits
+shiftTrits :: [Trit] -> Int -> [Trit]
 shiftTrits xs n
     | n < 0             = shiftLTrits xs n
     | n > 0             = shiftRTrits xs n
     | otherwise         = xs
 
-multTritsByTrit :: Trit -> Trits -> Trits
+multTritsByTrit :: Trit -> [Trit] -> [Trit]
 multTritsByTrit Posi xs = xs
 multTritsByTrit Zero xs = [Zero]
 multTritsByTrit Nega xs = invertTrits xs
 
-multTrits :: Trits -> Trits -> Trits
+multTrits :: [Trit] -> [Trit] -> [Trit]
 multTrits [] [] = [Zero]
 multTrits xs [] = [Zero]
 multTrits [] ys = [Zero]
@@ -208,51 +234,51 @@ multTrits xs ys = foldr addTrits [Zero] inlineProducts
     where inlineProducts = [unsafeShiftRTrits order value | (order, value) <- zip [0..] lnProds]
           lnProds        = [multTritsByTrit x ys | x <- xs]
 
-exptTrits :: Trits -> Integer -> Trits
+exptTrits :: [Trit] -> Integer -> [Trit]
 exptTrits x n
     | n > 0     = multTrits x (exptTrits x (n-1))
     | n == 0    = [Posi]
     | otherwise = throw NonTermination
 
-trits2Int :: Trits -> Integer
+trits2Int :: [Trit] -> Integer
 trits2Int [] = 0
 trits2Int xs = sum [d | d <- [trit2Int n x | (n, x) <- zip [0..] xs]]
 
 -- can technically convert any positive integer, just inefficient
-oneDigit2Trits :: Integer -> Trits
+oneDigit2Trits :: Integer -> [Trit]
 oneDigit2Trits n
     | n > 0     = posCarryTrits $ oneDigit2Trits (n-1)
     | n == 0    = []
     | otherwise = throw NonTermination
 
-tenInTrits :: Trits
+tenInTrits :: [Trit]
 tenInTrits = [Posi,Zero,Posi]
 
-digits2Trits :: Integer -> [Trits]
+digits2Trits :: Integer -> [[Trit]]
 digits2Trits 0 = []
 digits2Trits x = oneDigit2Trits (x `mod` 10) : digits2Trits (x `div` 10)
 
-unsignedInt2Trits :: Integer -> Trits
+unsignedInt2Trits :: Integer -> [Trit]
 unsignedInt2Trits x
     | x > 0     = foldr addTrits [] [multTrits order digit | (order, digit)
                             <- zip [exptTrits tenInTrits n | n <- [0..]] (digits2Trits x)]
     | x == 0    = [Zero]
     | otherwise = throw NonTermination
 
-int2Trits :: Integer -> Trits
+int2Trits :: Integer -> [Trit]
 int2Trits x
     | x < 0     = invertTrits $ unsignedInt2Trits (-x)
     | x > 0     = unsignedInt2Trits x
     | otherwise = []
 
-signumTrits :: Trits -> Trit
+signumTrits :: [Trit] -> Trit
 signumTrits []  = Zero
 signumTrits x   = last (chompTrits x)
 
-absTrits :: Trits -> Trits
+absTrits :: [Trit] -> [Trit]
 absTrits x = multTrits [signumTrits x] x
 
-fixLenTrits :: Int -> Trits -> Trits
+fixLenTrits :: Int -> [Trit] -> [Trit]
 fixLenTrits 0 []     = []
 fixLenTrits 0 xs
     | isZeros xs     = []
@@ -261,23 +287,23 @@ fixLenTrits 1 [x]    = [x]
 fixLenTrits n []     = Zero : fixLenTrits (n-1) []
 fixLenTrits n (x:xs) = x : fixLenTrits (n-1) xs
 
-maxTrits :: Int -> Trits
+maxTrits :: Int -> [Trit]
 maxTrits n
     | n == 0    = []
     | n > 0     = Posi : maxTrits (n-1)
     | otherwise = throw NonTermination
 
-minTrits :: Int -> Trits
+minTrits :: Int -> [Trit]
 minTrits n
     | n == 0    = []
     | n > 0     = Nega : minTrits (n-1)
     | otherwise = throw NonTermination
 
-trits2Str :: Trits -> String
+trits2Str :: [Trit] -> String
 trits2Str = foldr ((:) . trit2Chr) ""
 
 -- eq class operations on trits
-eqTrits, neqTrits :: Trits -> Trits -> Bool
+eqTrits, neqTrits :: [Trit] -> [Trit] -> Bool
 [] `eqTrits` []               = True
 [] `eqTrits` [y]
     | y == Zero               = True
@@ -295,7 +321,7 @@ eqTrits, neqTrits :: Trits -> Trits -> Bool
 (x:xs) `eqTrits` (y:ys)       = x == y && xs `eqTrits` ys
 xs `neqTrits` ys              = not $ xs `eqTrits` ys
 
-leTrits, ltTrits, geTrits, gtTrits :: Trits -> Trits -> Bool
+leTrits, ltTrits, geTrits, gtTrits :: [Trit] -> [Trit] -> Bool
 [] `ltTrits` []                 = False
 [x] `ltTrits` [y]               = x < y
 [] `ltTrits` [y]
@@ -326,31 +352,49 @@ xs `gtTrits` ys                 = not $ xs `ltTrits` ys
 xs `leTrits` ys                 = xs `eqTrits` ys || xs `ltTrits` ys
 xs `geTrits` ys                 = xs `eqTrits` ys || xs `gtTrits` ys
 
-compareTrits :: Trits -> Trits -> Ordering
+compareTrits :: [Trit] -> [Trit] -> Ordering
 xs `compareTrits` ys
     | xs `ltTrits` ys           = LT
     | xs `eqTrits` ys           = EQ
     | otherwise                 = GT
 
-andTrits, orTrits, xorTrits :: Trits -> Trits -> Trits
+andTrits, orTrits, xorTrits :: [Trit] -> [Trit] -> [Trit]
 xs `andTrits` ys                = [x `andTrit` y | (x, y) <- zip xs ys]
 xs `orTrits` ys                 = [x `orTrit` y | (x, y) <- zip xs ys]
 xs `xorTrits` ys                = [x `xorTrit` y | (x, y) <- zip xs ys]
 
-rotateRTrits :: Trits -> Int -> Trits
+rotateRTrits :: [Trit] -> Int -> [Trit]
 rotateRTrits xs n
     | n > 0                     = rotateRTrits (last xs : init xs) (n-1)
     | n == 0                    = xs
     | otherwise                 = throw NonTermination
 
-rotateLTrits :: Trits -> Int -> Trits
+rotateLTrits :: [Trit] -> Int -> [Trit]
 rotateLTrits xs n
     | n > 0                     = rotateLTrits (tail xs ++ [head xs]) (n-1)
     | n == 0                    = xs
     | otherwise                 = throw NonTermination
 
-rotateTrits :: Trits -> Int -> Trits
+rotateTrits :: [Trit] -> Int -> [Trit]
 rotateTrits xs n
     | n > 0                     = rotateLTrits xs n
     | n < 0                     = rotateRTrits xs n
     | otherwise                 = xs
+
+-- definition of typeclass Trits
+class Eq a => Trits a where
+    (.&.)           :: a -> a -> a
+    (.|.)           :: a -> a -> a
+    xor             :: a -> a -> a
+    complement      :: a -> a
+    shift           :: a -> Int -> a
+    rotate          :: a -> Int -> a
+    tritSize        :: a -> Int
+    testTrit        :: a -> Int -> Trit
+    setTrit         :: a -> Trit -> Int -> a
+    nand            :: a -> a -> a
+    xs `nand` ys    = complement $ xs .&. ys
+    nor             :: a -> a -> a
+    xs `nor` ys     = complement $ xs .|. ys
+    xnor            :: a -> a -> a
+    xs `xnor` ys    = complement $ xs `xor` ys

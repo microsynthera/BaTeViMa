@@ -20,26 +20,10 @@ import Trits
       trits2Int,
       trits2Str,
       xorTrits,
-      Trit (..))
+      Trit (..),
+      Trits (..))
 
 import Control.Exception ( throw, ArithException(Overflow) )
-
-class Eq a => Trits a where
-    (.&.)           :: a -> a -> a
-    (.|.)           :: a -> a -> a
-    xor             :: a -> a -> a
-    complement      :: a -> a
-    shift           :: a -> Int -> a
-    rotate          :: a -> Int -> a
-    tritSize        :: a -> Int
-    testTrit        :: a -> Int -> Trit
-    setTrit         :: a -> Trit -> Int -> a
-    nand            :: a -> a -> a
-    xs `nand` ys    = complement $ xs .&. ys
-    nor             :: a -> a -> a
-    xs `nor` ys     = complement $ xs .|. ys
-    xnor            :: a -> a -> a
-    xs `xnor` ys    = complement $ xs `xor` ys
 
 newtype BTWord18 = BTWord18 [Trit] --deriving Show
 

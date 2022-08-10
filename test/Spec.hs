@@ -1,5 +1,5 @@
 import Trits ( Trit(..) )
-import BTWord ( BTWord18, mkBTWord18, Trits(..) )
+import BTWord ( BTWord18, mkBTWord18 )
 
 wordsArithSpec, wordsArithTest :: BTWord18
 wordsArithSpec   = 0
