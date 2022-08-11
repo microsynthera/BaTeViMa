@@ -1,3 +1,4 @@
+{-}
 import Trits ( Trit(..) )
 import BTWord ( BTWord18, mkBTWord18 )
 
@@ -26,3 +27,4 @@ main = do
     doTest "BTWord18 Arithmetic" wordsArithTest wordsArithSpec
     doTest "BTWord18 Tritwise" wordsTritwiseTest wordsTritwiseSpec
     putStrLn "All tests complete!"
+-}

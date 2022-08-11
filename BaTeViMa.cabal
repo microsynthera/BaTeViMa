@@ -25,9 +25,7 @@ source-repository head
 
 library
   exposed-modules:
-      BTInt
-      BTTryte
-      BTWord
+      BTInteger
       Trits
   other-modules:
       Paths_BaTeViMa

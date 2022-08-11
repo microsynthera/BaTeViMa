@@ -5,6 +5,7 @@ A Balanced Ternary Virtual Machine
 
 ## TODO
 
+- [ ] setTrit function for BTInteger should pad zeroes in empty or short integers
 - [ ] ability to define multiple fixed length bt integer types (neatly)
 - [ ] data type containing registers, memory, i/o, etc. (adjustable also?)
 - [X] trit-level multiplication
